@@ -16,7 +16,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * ZooKeeper 服务注册发现实现.
@@ -64,9 +67,29 @@ public class ZookeeperServiceRegister implements ServiceRegister {
             Stat serviceNodeStat;
             if ((serviceNodeStat = zkClient.exists(nodePath, false)) == null) {
                 zkClient.create(nodePath, serviceAddrList.getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE,
-                        CreateMode.EPHEMERAL);
+                        CreateMode.PERSISTENT);
             } else {
-                zkClient.setData(nodePath, serviceAddrList.getBytes(), serviceNodeStat.getVersion() + 1);
+                String serviceNodes = new String(zkClient.getData(nodePath, null, null));
+
+                // 将已经注册的服务的请求IP和端口查出来，利用新注册的服务的IP查询该IP是否已经注册过
+                Set<String> serviceHasRegistered = Arrays.stream(serviceNodes.split(",")).collect(Collectors.toSet());
+                String[] ipPortToPublish = srvAddrList.split(",");
+
+                for (String itemToPublish : ipPortToPublish) {
+
+                    // 判断IP和端口是否已经被别的服务绑定了.
+                    if (serviceHasRegistered.contains(itemToPublish)) {
+                        String[] socketInfo = itemToPublish.split(":");
+                        LOGGER.error("service: {} to publish on {}:{} has to be binded to another service, this " +
+                                        "address will be aborted...",
+                                serviceName, socketInfo[0], socketInfo[1]);
+                        continue;
+                    }
+                    serviceHasRegistered.add(itemToPublish);
+                }
+
+                String finalServiceNodesToPub = StringUtils.join(serviceHasRegistered, ",");
+                zkClient.setData(nodePath, finalServiceNodesToPub.getBytes(), serviceNodeStat.getVersion());
             }
 
             LOGGER.debug("register service successfully,service name is : {}", serviceInfo.getServiceName());

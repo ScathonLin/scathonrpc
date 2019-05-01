@@ -25,6 +25,5 @@ public class SimpleServerTest {
         ApplicationContext context =
                 new AnnotationConfigApplicationContext(ServerBeanConfig.class, RpcCommonBeanConfig.class, RegistryInitConfig.class);
         System.out.println("-0-0---");
-        TimeUnit.SECONDS.sleep(60);
     }
 }

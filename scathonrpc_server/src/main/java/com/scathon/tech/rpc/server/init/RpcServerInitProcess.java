@@ -43,6 +43,15 @@ public class RpcServerInitProcess implements InitializingBean, ApplicationContex
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        LOGGER.info("start netty rpc engine...");
+        // TODO 拉起netty服务端，接受RPC请求，对外提供服务.
+        LOGGER.info("netty rpc engine start successfully...");
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        // 设置spring bean context.
+        this.context = applicationContext;
 
         // 扫描RpcServicePublisher 修饰的类，将注解中的name属性和被修饰的对象做一个映射map.
         Map<String, Object> publisherServiceInstances = context.getBeansWithAnnotation(RpcServicePublisher.class);
@@ -69,12 +78,5 @@ public class RpcServerInitProcess implements InitializingBean, ApplicationContex
                         e.getMessage());
             }
         });
-
-        // TODO 启动netty服务端，接受RPC请求.
-    }
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.context = applicationContext;
     }
 }
