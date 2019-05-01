@@ -3,9 +3,10 @@ package com.scathon.tech.rpc.common.init;
 import com.scathon.tech.rpc.common.BeanScanFlag;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 
 /**
- * TODO Function The Class Is.
+ * bean注册类+配置读取类.
  *
  * @ClassName RpcCommonBeanConfig.
  * @Description TODO.
@@ -15,5 +16,6 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @ComponentScan(basePackageClasses = {BeanScanFlag.class})
+@PropertySource(value = "scathonrpc.properties")
 public class RpcCommonBeanConfig {
 }

@@ -3,7 +3,6 @@ package com.scathon.tech.rpc.registry.init;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 
 /**
  * TODO Function The Class Is.
@@ -16,7 +15,6 @@ import org.springframework.context.annotation.PropertySource;
  */
 @Configuration
 @ComponentScan(basePackages = "com.scathon.tech.rpc.registry")
-@PropertySource(value = "scathonrpc.properties")
 public class RegistryInitConfig {
     @Bean
     public ZookeeperInit zookeeperInit() {

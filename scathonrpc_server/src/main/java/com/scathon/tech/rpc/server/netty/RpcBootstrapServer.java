@@ -1,5 +1,7 @@
 package com.scathon.tech.rpc.server.netty;
 
+import com.scathon.tech.rpc.common.conf.RpcProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -13,4 +15,12 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class RpcBootstrapServer {
+
+    @Autowired
+    private RpcProperties rpcProperties;
+
+    public void bootstrap() {
+
+    }
+
 }
