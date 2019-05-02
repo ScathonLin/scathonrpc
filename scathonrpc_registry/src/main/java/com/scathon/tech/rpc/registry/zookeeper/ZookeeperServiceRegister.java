@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.scathon.tech.rpc.registry.ServiceRegister;
 import com.scathon.tech.rpc.registry.common.ServiceInfo;
 import com.scathon.tech.rpc.registry.common.ZookeeperConstant;
-import com.scathon.tech.rpc.registry.exception.ServiceModifyException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
@@ -30,6 +29,7 @@ import java.util.stream.Collectors;
  * @Date 2019/5/1
  * @Version 1.0
  */
+@SuppressWarnings("SpringJavaAutowiredFieldsWarningInspection")
 @Component
 public class ZookeeperServiceRegister implements ServiceRegister {
 
@@ -100,7 +100,7 @@ public class ZookeeperServiceRegister implements ServiceRegister {
     }
 
     @Override
-    public ServiceInfo removeService(ServiceInfo serviceInfo) throws ServiceModifyException {
+    public ServiceInfo removeService(ServiceInfo serviceInfo) {
         return null;
     }
 

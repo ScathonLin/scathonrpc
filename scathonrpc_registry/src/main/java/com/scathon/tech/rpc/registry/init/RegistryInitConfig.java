@@ -5,7 +5,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * TODO Function The Class Is.
+ * 服务注册初始化配置类.
  *
  * @ClassName CommonInitConfig.
  * @Description TODO.

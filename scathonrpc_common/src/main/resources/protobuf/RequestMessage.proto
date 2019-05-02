@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+option java_package = "com.scathon.tech.rpc.common.proto";
+
+import "google/protobuf/any.proto";
+
+option java_outer_classname = "RequestMsgEntity";
+
+message RequestMessage {
+    string requestId = 1;
+    string serviceName = 2;
+    string methodName = 3;
+    repeated string paramTypes = 4;
+    repeated google.protobuf.Any paramObjs = 5;
+}

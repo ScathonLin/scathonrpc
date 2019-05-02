@@ -1,6 +1,7 @@
 package com.scathon.tech.rpc.registry.zookeeper;
 
 import com.alibaba.fastjson.JSONObject;
+import com.scathon.tech.rpc.common.conf.RpcProperties;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 import org.slf4j.Logger;
@@ -27,7 +28,7 @@ public final class ZookeeperClientHolder {
      * zookeeper connection configuration.
      */
     @Autowired
-    private ZookeeperConnConfig zkConf;
+    private RpcProperties rpcProperties;
 
     /**
      * zookeeper client.
@@ -59,12 +60,13 @@ public final class ZookeeperClientHolder {
     }
 
     public ZooKeeper getClient() {
-        LOGGER.info("start connect to zookeeper...conf : {}", JSONObject.toJSONString(zkConf));
+        LOGGER.info("start connect to zookeeper...conf : {}", JSONObject.toJSONString(rpcProperties));
         try {
             if (zkClient == null) {
                 synchronized (LOCK) {
                     if (zkClient == null) {
-                        zkClient = new ZooKeeper(zkConf.getClusterAddrs(), zkConf.getSessionTimeout(), CONN_WATCHER);
+                        zkClient = new ZooKeeper(rpcProperties.getClusterAddrs(), rpcProperties.getSessionTimeout(),
+                                CONN_WATCHER);
                         SYNC_CONNECTED_FLAG.await();
                     }
                 }
@@ -77,7 +79,7 @@ public final class ZookeeperClientHolder {
 
     public ZooKeeper rebuild() {
         try {
-            zkClient = new ZooKeeper(zkConf.getClusterAddrs(), zkConf.getSessionTimeout(), CONN_WATCHER);
+            zkClient = new ZooKeeper(rpcProperties.getClusterAddrs(), rpcProperties.getSessionTimeout(), CONN_WATCHER);
         } catch (IOException e) {
             e.printStackTrace();
         }

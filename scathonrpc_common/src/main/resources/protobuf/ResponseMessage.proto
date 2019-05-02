@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+option java_package = "com.scathon.tech.rpc.common.proto";
+
+import "google/protobuf/any.proto";
+
+option java_outer_classname = "ResponseMsgEntity";
+
+message ResponseMessage {
+    string requestId = 1;
+    string status = 2;
+    string errMsg = 3;
+    repeated google.protobuf.Any responseBody = 4;
+}

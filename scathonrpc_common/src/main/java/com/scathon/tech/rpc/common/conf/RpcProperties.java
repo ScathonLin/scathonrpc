@@ -1,12 +1,8 @@
 package com.scathon.tech.rpc.common.conf;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.support.PropertiesLoaderUtils;
+import lombok.Getter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import java.io.IOException;
-import java.util.Properties;
 
 /**
  * TODO Function The Class Is.
@@ -19,27 +15,32 @@ import java.util.Properties;
  */
 @Component
 public class RpcProperties {
-    private static final Properties RPC_PROPERTIES = new Properties();
-
-    static {
-        try {
-            PropertiesLoaderUtils.fillProperties(RPC_PROPERTIES, new ClassPathResource("scathonrpc.properties"
-            ));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private RpcProperties() {
-    }
+    /**
+     * zookeeper 集群地址.
+     */
+    @Value("${zookeeper.cluster.addresses}")
+    @Getter
+    private String clusterAddrs = "127.0.0.1:2181";
 
     /**
-     * 根据配置项的key返回对应的value，如果查找不到返回空字符串.
-     *
-     * @param key 配置项的key.
-     * @return 配置项的值.
+     * zookeeper session 超时时间.
      */
-    public String getProperty(String key) {
-        return RPC_PROPERTIES.getProperty(key, StringUtils.EMPTY);
-    }
+    @Value("${zookeeper.session.timeout.ms}")
+    @Getter
+    private int sessionTimeout = 30000;
+
+    /**
+     * 注册中心技术选型，目前是zookeeper.
+     */
+    @Value("${register.component.type}")
+    @Getter
+    private String registerComponentType;
+
+    /**
+     * 服务绑定的IP端口连接串.
+     */
+    @Value("${server.provider.ips.addrs}")
+    @Getter
+    private String serverProviderIpsAddrs;
+
 }

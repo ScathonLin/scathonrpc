@@ -2,13 +2,12 @@ package com.scathon.tech.rpc.server.init;
 
 import com.alibaba.fastjson.JSONObject;
 import com.scathon.tech.rpc.common.annotations.RpcServicePublisher;
-import com.scathon.tech.rpc.common.conf.RpcPropNameContext;
 import com.scathon.tech.rpc.common.conf.RpcProperties;
 import com.scathon.tech.rpc.registry.ServiceRegister;
 import com.scathon.tech.rpc.registry.common.ServiceInfo;
 import com.scathon.tech.rpc.registry.common.ServiceRoleEnum;
 import com.scathon.tech.rpc.registry.exception.ServiceModifyException;
-import com.scathon.tech.rpc.registry.zookeeper.ZookeeperClientHolder;
+import com.scathon.tech.rpc.server.netty.RpcBootstrapServer;
 import com.scathon.tech.rpc.server.registry.RpcServiceRegistry;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -32,26 +31,27 @@ import java.util.stream.Collectors;
  * @Date 2019/4/27
  * @Version 1.0
  */
+@SuppressWarnings("SpringJavaAutowiredFieldsWarningInspection")
 @Component
 public class RpcServerInitProcess implements InitializingBean, ApplicationContextAware {
-    private ApplicationContext context;
     private static final Logger LOGGER = LoggerFactory.getLogger(RpcServerInitProcess.class);
     @Autowired
     private RpcProperties rpcProperties;
     @Autowired
     private ServiceRegister serviceRegister;
+    @Autowired
+    private RpcBootstrapServer rpcServer;
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         LOGGER.info("start netty rpc engine...");
-        // TODO 拉起netty服务端，接受RPC请求，对外提供服务.
+        // 拉起netty服务端，接受RPC请求，对外提供服务.
+        rpcServer.bootstrap();
         LOGGER.info("netty rpc engine start successfully...");
     }
 
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        // 设置spring bean context.
-        this.context = applicationContext;
+    public void setApplicationContext(ApplicationContext context) throws BeansException {
 
         // 扫描RpcServicePublisher 修饰的类，将注解中的name属性和被修饰的对象做一个映射map.
         Map<String, Object> publisherServiceInstances = context.getBeansWithAnnotation(RpcServicePublisher.class);
@@ -70,7 +70,7 @@ public class RpcServerInitProcess implements InitializingBean, ApplicationContex
         // 注册服务.
         LOGGER.info("services need to publish are : {}", JSONObject.toJSONString(publisherServiceInstances.keySet()));
         serviceNameToObjMap.forEach((serviceName, serviceObj) -> {
-            String serviceAddrList = rpcProperties.getProperty(RpcPropNameContext.SERVICE_PROVIDER_IP_ADDRS);
+            String serviceAddrList = rpcProperties.getServerProviderIpsAddrs();
             try {
                 serviceRegister.registerService(ServiceInfo.builder().serviceAddrList(serviceAddrList).serviceName(serviceName).serviceRole(ServiceRoleEnum.SERVICE_PROVIDER).build());
             } catch (ServiceModifyException e) {
