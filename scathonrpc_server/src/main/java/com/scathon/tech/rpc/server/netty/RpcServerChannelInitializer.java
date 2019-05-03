@@ -35,9 +35,9 @@ public class RpcServerChannelInitializer extends ChannelInitializer<SocketChanne
                 // 解码handler1(in1)
                 .addLast(new MessageDecoder.RequestMsgDecoder())
                 // 数据处理handler1(in2)
-                .addLast()
+                .addLast(new RpcRequestProcessHandler())
                 // 编码器(out1)
-                .addLast(new MessageEncoder());
+                .addLast(new MessageEncoder.ResponseMessageEncoder());
         LOGGER.info("complete init channel...");
     }
 }

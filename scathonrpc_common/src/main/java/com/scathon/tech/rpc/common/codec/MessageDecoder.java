@@ -1,12 +1,14 @@
 package com.scathon.tech.rpc.common.codec;
 
-import com.scathon.tech.rpc.common.proto.RequestMsgEntity;
-import com.scathon.tech.rpc.common.proto.ResponseMsgEntity;
+import com.scathon.tech.rpc.common.entity.RequestMessage;
+import com.scathon.tech.rpc.common.entity.ResponseMessage;
+import com.scathon.tech.rpc.common.utils.ProtostuffCodecUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * TODO Function The Class Is.
@@ -25,15 +27,16 @@ public class MessageDecoder {
     public static class RequestMsgDecoder extends ByteToMessageDecoder {
 
         @Override
-        protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> list) throws Exception {
+        protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> list) {
             // 获取能读取到的字节数.
             int bytesCanRead = byteBuf.readableBytes();
             // 申请对应的内存存储请求数据.
             byte[] dataBuf = new byte[bytesCanRead];
             byteBuf.readBytes(dataBuf);
             // 反序列化请求数据.
-            RequestMsgEntity.RequestMessage reqMsg = RequestMsgEntity.RequestMessage.parseFrom(dataBuf);
-            list.add(reqMsg);
+            Optional<RequestMessage> reqMsgOptional =
+                    ProtostuffCodecUtils.deserialize(dataBuf, RequestMessage.class);
+            reqMsgOptional.ifPresent(list::add);
         }
     }
 
@@ -43,12 +46,13 @@ public class MessageDecoder {
     public static class ResponseMsgDecocder extends ByteToMessageDecoder {
 
         @Override
-        protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> list) throws Exception {
+        protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> list) {
             int bytesCanRead = byteBuf.readableBytes();
             byte[] dataBuf = new byte[bytesCanRead];
             byteBuf.readBytes(dataBuf);
-            ResponseMsgEntity.ResponseMessage respMsg = ResponseMsgEntity.ResponseMessage.parseFrom(dataBuf);
-            list.add(respMsg);
+            Optional<ResponseMessage> respMsgOptional = ProtostuffCodecUtils.deserialize(dataBuf,
+                    ResponseMessage.class);
+            respMsgOptional.ifPresent(list::add);
         }
     }
 }

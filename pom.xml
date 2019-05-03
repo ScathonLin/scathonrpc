@@ -30,6 +30,7 @@
         <apache.common.configuration.version>1.8</apache.common.configuration.version>
         <apache.common.collections.version>4.1</apache.common.collections.version>
         <google.protobuf.version>3.5.1</google.protobuf.version>
+        <google.protostuff.version>1.5.9</google.protostuff.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -102,6 +103,16 @@
                 <artifactId>protobuf-java</artifactId>
                 <version>${google.protobuf.version}</version>
             </dependency>
+            <dependency>
+                <groupId>io.protostuff</groupId>
+                <artifactId>protostuff-core</artifactId>
+                <version>${google.protostuff.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.protostuff</groupId>
+                <artifactId>protostuff-runtime</artifactId>
+                <version>${google.protostuff.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <dependencies>
@@ -161,6 +172,14 @@
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.protostuff</groupId>
+            <artifactId>protostuff-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.protostuff</groupId>
+            <artifactId>protostuff-runtime</artifactId>
         </dependency>
     </dependencies>
     <build>

@@ -1,5 +1,7 @@
 package com.scathon.tech.rpc.server.registry;
 
+import lombok.Getter;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -20,11 +22,11 @@ public final class RpcServiceRegistry {
     private RpcServiceRegistry() {
     }
 
-    public static RpcServiceRegistry getInstance() {
-        return INSTANCE;
-    }
-
     public static void registryRpcService(Map<String, Object> serviceMap) {
         serviceMap.forEach(SERVICE_REGIS_MAP::put);
+    }
+
+    public static Map<String, Object> getServiceRegisMap() {
+        return SERVICE_REGIS_MAP;
     }
 }

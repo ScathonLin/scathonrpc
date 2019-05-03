@@ -60,6 +60,7 @@ public class RpcBootstrapServer {
             // release resource.
             workerGroup.shutdownGracefully();
             bossGroup.shutdownGracefully();
+            LOGGER.error("############netty service has been shutdown gracefully!############");
         }
 
     }

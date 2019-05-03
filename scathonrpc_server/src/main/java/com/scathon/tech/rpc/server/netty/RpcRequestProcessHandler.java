@@ -1,0 +1,99 @@
+package com.scathon.tech.rpc.server.netty;
+
+import com.alibaba.fastjson.JSONObject;
+import com.scathon.tech.rpc.common.entity.CodeMsgMapping;
+import com.scathon.tech.rpc.common.entity.RequestMessage;
+import com.scathon.tech.rpc.common.entity.ResponseCode;
+import com.scathon.tech.rpc.common.entity.ResponseMessage;
+import com.scathon.tech.rpc.common.utils.ReflectionUtils;
+import com.scathon.tech.rpc.server.registry.RpcServiceRegistry;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
+import java.util.function.Function;
+
+import static com.scathon.tech.rpc.common.entity.ResponseCode.*;
+
+
+/**
+ * 数据处理handler，核心.
+ *
+ * @ClassName RpcRequestProcessHandler.
+ * @Description TODO.
+ * @Author linhd eng:ScathonLin
+ * @Date 2019/5/2
+ * @Version 1.0
+ */
+public final class RpcRequestProcessHandler extends SimpleChannelInboundHandler<RequestMessage> {
+
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RpcRequestProcessHandler.class);
+
+    @Override
+    protected void channelRead0(ChannelHandlerContext ctx, RequestMessage msg) throws Exception {
+        LOGGER.info("received one request : {}", msg.toString());
+        // 处理请求，获取响应结果.
+        ResponseMessage respMsg = process(msg);
+        LOGGER.info("complete process requst, id is : {}", msg.getRequestUUID());
+
+        ctx.writeAndFlush(respMsg).addListener(ChannelFutureListener.CLOSE);
+        LOGGER.info("completely write and flush data to next handler from process handler....");
+    }
+
+    private ResponseMessage process(RequestMessage msg) {
+        // 获取调用的参数信息.
+        String serviceName = msg.getServiceName();
+        String methodName = msg.getFunctionName();
+        Class<?>[] parameterTypes = msg.getParameterTypes();
+        Object[] parameters = msg.getParameters();
+
+        // 获取服务名称和服务实例对象的映射关系.
+        Map<String, Object> serviceRegisMap = RpcServiceRegistry.getServiceRegisMap();
+        // 获取服务实例对象.
+        Object targetService = serviceRegisMap.get(serviceName);
+        ResponseMessage respMsg = new ResponseMessage();
+        // 取出错误码和错误消息模板的映射关系.
+        Map<ResponseCode, Function<Object[], String>> codeMsgMap = CodeMsgMapping.MAP;
+        // 判断服务实例对象是不是存在，不存在那么就设置错误码和错误说明，直接返回，不进行后续调用.
+        if (targetService == null) {
+            return respMsg.setErrCode(SERVICE_NOT_FOUND)
+                    .setErrMsg(codeMsgMap.get(SERVICE_NOT_FOUND).apply(new Object[]{serviceName}));
+        }
+
+        try {
+
+            LOGGER.info("start calling service: {}#{}", serviceName, methodName);
+            Object invokeResult = ReflectionUtils.invokeMethod(targetService, methodName, parameterTypes, parameters);
+
+            respMsg.setErrCode(SUCCESS).setErrMsg(codeMsgMap.get(SUCCESS).apply(new Object[]{serviceName, methodName}));
+            respMsg.setRequestUUID(msg.getRequestUUID());
+            respMsg.setRespBody(invokeResult);
+            LOGGER.info("successfully calling service:{}#{}", serviceName, methodName);
+
+        } catch (NoSuchMethodException e) {
+            // 方法没找到
+            respMsg.setErrCode(FUNC_NOT_FOUND).setErrMsg(codeMsgMap.get(FUNC_NOT_FOUND).apply(new Object[]{methodName}));
+        } catch (InvocationTargetException e) {
+            // 未知异常.
+            respMsg.setErrCode(UNKNOWN_ERROR).setErrMsg(codeMsgMap.get(UNKNOWN_ERROR).apply(new Object[]{serviceName,
+                    methodName}));
+        } catch (IllegalAccessException e) {
+            // 非法访问异常.
+            respMsg.setErrCode(ACCESS_ERROR).setErrMsg(codeMsgMap.get(ACCESS_ERROR).apply(new Object[]{serviceName,
+                    methodName}));
+        }
+        return respMsg;
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        LOGGER.error("unexcepted exception found, error msg is : {}", cause.getMessage());
+        ctx.close();
+    }
+
+}
