@@ -1,2 +1,2 @@
 # scathonrpc
-RPC framework 
+RPC framework 实践.
