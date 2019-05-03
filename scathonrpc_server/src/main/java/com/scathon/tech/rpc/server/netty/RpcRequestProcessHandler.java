@@ -1,12 +1,11 @@
 package com.scathon.tech.rpc.server.netty;
 
-import com.alibaba.fastjson.JSONObject;
 import com.scathon.tech.rpc.common.entity.CodeMsgMapping;
 import com.scathon.tech.rpc.common.entity.RequestMessage;
 import com.scathon.tech.rpc.common.entity.ResponseCode;
 import com.scathon.tech.rpc.common.entity.ResponseMessage;
 import com.scathon.tech.rpc.common.utils.ReflectionUtils;
-import com.scathon.tech.rpc.server.registry.RpcServiceRegistry;
+import com.scathon.tech.rpc.server.registry.RpcServicePublishedHolder;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -53,7 +52,7 @@ public final class RpcRequestProcessHandler extends SimpleChannelInboundHandler<
         Object[] parameters = msg.getParameters();
 
         // 获取服务名称和服务实例对象的映射关系.
-        Map<String, Object> serviceRegisMap = RpcServiceRegistry.getServiceRegisMap();
+        Map<String, Object> serviceRegisMap = RpcServicePublishedHolder.getServiceRegisMap();
         // 获取服务实例对象.
         Object targetService = serviceRegisMap.get(serviceName);
         ResponseMessage respMsg = new ResponseMessage();

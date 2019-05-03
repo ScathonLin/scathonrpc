@@ -1,25 +1,21 @@
 package com.scathon.tech.rpc.server.registry;
 
-import lombok.Getter;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * TODO Function The Class Is.
+ * 管理发布了哪些RPC服务.
  *
- * @ClassName RpcServiceRegistry.
+ * @ClassName RpcServicePublishedHolder.
  * @Description TODO.
  * @Author linhd eng:ScathonLin
  * @Date 2019/4/27
  * @Version 1.0
  */
-public final class RpcServiceRegistry {
-    private static final RpcServiceRegistry INSTANCE = new RpcServiceRegistry();
-
+public final class RpcServicePublishedHolder {
     private static final Map<String, Object> SERVICE_REGIS_MAP = new ConcurrentHashMap<>();
 
-    private RpcServiceRegistry() {
+    private RpcServicePublishedHolder() {
     }
 
     public static void registryRpcService(Map<String, Object> serviceMap) {

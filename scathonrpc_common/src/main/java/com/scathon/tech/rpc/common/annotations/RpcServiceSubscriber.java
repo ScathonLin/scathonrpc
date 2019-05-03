@@ -1,5 +1,6 @@
 package com.scathon.tech.rpc.common.annotations;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.lang.annotation.ElementType;
@@ -17,5 +18,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.FIELD})
 public @interface RpcServiceSubscriber {
-    String name();
+    String name() default StringUtils.EMPTY;
 }

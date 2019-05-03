@@ -1,5 +1,6 @@
 package com.scathon.tech.rpc.server.beanconfig;
 
+import com.scathon.tech.rpc.server.ServerModuleBeanScanFlag;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
@@ -13,6 +14,6 @@ import org.springframework.context.annotation.Configuration;
  * @Version 1.0
  */
 @Configuration
-@ComponentScan(basePackages = "com.scathon.tech.rpc.server")
+@ComponentScan(basePackageClasses = {ServerModuleBeanScanFlag.class})
 public class ServerBeanConfig {
 }

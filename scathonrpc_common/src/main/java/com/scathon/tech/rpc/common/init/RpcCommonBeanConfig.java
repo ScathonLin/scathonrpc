@@ -1,6 +1,6 @@
 package com.scathon.tech.rpc.common.init;
 
-import com.scathon.tech.rpc.common.BeanScanFlag;
+import com.scathon.tech.rpc.common.CommonModuleBeanScanFlag;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -15,7 +15,7 @@ import org.springframework.context.annotation.PropertySource;
  * @Version 1.0
  */
 @Configuration
-@ComponentScan(basePackageClasses = {BeanScanFlag.class})
+@ComponentScan(basePackageClasses = {CommonModuleBeanScanFlag.class})
 @PropertySource(value = "scathonrpc.properties")
 public class RpcCommonBeanConfig {
 }

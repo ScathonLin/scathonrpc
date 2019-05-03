@@ -1,20 +1,20 @@
 package com.scathon.tech.rpc.common.annotations;
 
-import org.springframework.stereotype.Component;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Rpc Service Publisher Annotation..
+ * 装配注解.
  *
- * @author linhd
- * @since 2019-04-27
+ * @ClassName RpcAutowired.
+ * @Description TODO.
+ * @Author linhd eng:ScathonLin
+ * @Date 2019/5/3
+ * @Version 1.0
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
-public @interface RpcServicePublisher {
-    String name();
+@Target(ElementType.FIELD)
+public @interface RpcAutowired {
 }

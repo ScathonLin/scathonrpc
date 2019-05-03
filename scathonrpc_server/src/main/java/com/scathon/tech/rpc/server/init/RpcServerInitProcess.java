@@ -8,7 +8,7 @@ import com.scathon.tech.rpc.registry.common.ServiceInfo;
 import com.scathon.tech.rpc.registry.common.ServiceRoleEnum;
 import com.scathon.tech.rpc.registry.exception.ServiceModifyException;
 import com.scathon.tech.rpc.server.netty.RpcBootstrapServer;
-import com.scathon.tech.rpc.server.registry.RpcServiceRegistry;
+import com.scathon.tech.rpc.server.registry.RpcServicePublishedHolder;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +65,7 @@ public class RpcServerInitProcess implements InitializingBean, ApplicationContex
         }).collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
 
         // 缓存RPC服务.
-        RpcServiceRegistry.registryRpcService(serviceNameToObjMap);
+        RpcServicePublishedHolder.registryRpcService(serviceNameToObjMap);
 
         // 注册服务.
         LOGGER.info("services need to publish are : {}", JSONObject.toJSONString(publisherServiceInstances.keySet()));
