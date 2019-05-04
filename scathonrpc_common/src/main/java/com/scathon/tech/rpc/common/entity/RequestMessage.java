@@ -2,6 +2,7 @@ package com.scathon.tech.rpc.common.entity;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.Accessors;
 
 /**
@@ -14,6 +15,7 @@ import lombok.experimental.Accessors;
  * @Version 1.0
  */
 @Accessors(chain = true)
+@ToString
 public class RequestMessage {
     /**
      * 请求UUID.

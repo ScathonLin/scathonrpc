@@ -4,6 +4,8 @@ import com.scathon.tech.rpc.common.codec.MessageDecoder;
 import com.scathon.tech.rpc.common.codec.MessageEncoder;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
+import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -32,12 +34,16 @@ public class RpcServerChannelInitializer extends ChannelInitializer<SocketChanne
     protected void initChannel(SocketChannel channel) throws Exception {
         LOGGER.info("start init channel...");
         channel.pipeline()
-                // 解码handler1(in1)
+                // input-1
+                .addLast(new ProtobufVarint32FrameDecoder())
+                // input-2
                 .addLast(new MessageDecoder.RequestMsgDecoder())
-                // 数据处理handler1(in2)
-                .addLast(new RpcRequestProcessHandler())
-                // 编码器(out1)
-                .addLast(new MessageEncoder.ResponseMessageEncoder());
+                // output-1
+                .addLast(new ProtobufVarint32LengthFieldPrepender())
+                // output-2
+                .addLast(new MessageEncoder.ResponseMessageEncoder())
+                // output-3
+                .addLast(new RpcRequestProcessHandler());
         LOGGER.info("complete init channel...");
     }
 }

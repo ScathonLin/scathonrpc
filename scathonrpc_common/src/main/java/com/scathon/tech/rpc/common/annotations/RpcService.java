@@ -1,21 +1,21 @@
 package com.scathon.tech.rpc.common.annotations;
 
-import org.springframework.stereotype.Component;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Rpc Service Publisher Annotation..
+ * TODO Function The Class Is.
  *
- * @author linhd
- * @since 2019-04-27
+ * @ClassName RpcService.
+ * @Description TODO.
+ * @Author linhd eng:ScathonLin
+ * @Date 2019/5/4
+ * @Version 1.0
  */
-@Component
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
-public @interface RpcServicePublisher {
+@Target(ElementType.TYPE)
+public @interface RpcService {
     String name();
 }

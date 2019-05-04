@@ -1,6 +1,5 @@
 package com.scathon.tech.rpc.client.proxy;
 
-import com.scathon.tech.rpc.client.DemoService;
 import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.cglib.proxy.MethodInterceptor;
 
@@ -19,7 +18,7 @@ public class CglibProxyUtils {
 
     public static Object getProxyByInterfaceType(MethodInterceptor proxy, Class<?> interfaceType) {
         Enhancer enhancer = new Enhancer();
-        enhancer.setSuperclass(DemoService.class);
+        enhancer.setSuperclass(interfaceType);
         enhancer.setCallback(proxy);
         return enhancer.create();
     }

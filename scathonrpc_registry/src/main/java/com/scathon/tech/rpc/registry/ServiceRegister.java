@@ -3,8 +3,6 @@ package com.scathon.tech.rpc.registry;
 import com.scathon.tech.rpc.registry.common.ServiceInfo;
 import com.scathon.tech.rpc.registry.exception.ServiceModifyException;
 
-import java.util.List;
-
 /**
  * TODO Function The Class Is.
  *
@@ -36,7 +34,8 @@ public interface ServiceRegister {
      * 拉取服务注册信息.
      *
      * @return 服务注册信息列表.
+     * @param serviceName 服务名称
      */
-    List<ServiceInfo> retrieveService();
+    ServiceInfo discoverService(String serviceName);
 
 }

@@ -1,8 +1,9 @@
 package com.scathon.tech.rpc.client.simple.service;
 
-import com.scathon.tech.rpc.client.DemoService;
 import com.scathon.tech.rpc.common.annotations.RpcAutowired;
 import com.scathon.tech.rpc.common.annotations.RpcServiceSubscriber;
+import com.scathon.tech.rpc.service.example.entity.User;
+import com.scathon.tech.rpc.service.example.service.UserService;
 
 /**
  * @author linhd
@@ -11,6 +12,12 @@ import com.scathon.tech.rpc.common.annotations.RpcServiceSubscriber;
 public class UserServiceClient {
 
     @RpcAutowired
-    public DemoService demoService;
+    private UserService userService;
+
+    public String findUserById(int id){
+        User user = userService.findUserById(id);
+        return user.toString();
+    }
+
 }
 

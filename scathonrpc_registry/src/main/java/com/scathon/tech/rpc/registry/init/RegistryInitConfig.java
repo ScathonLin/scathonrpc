@@ -1,5 +1,6 @@
 package com.scathon.tech.rpc.registry.init;
 
+import com.scathon.tech.rpc.registry.RegistryModuleBeanScanFlag;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -14,7 +15,7 @@ import org.springframework.context.annotation.Configuration;
  * @Version 1.0
  */
 @Configuration
-@ComponentScan(basePackages = "com.scathon.tech.rpc.registry")
+@ComponentScan(basePackageClasses = RegistryModuleBeanScanFlag.class)
 public class RegistryInitConfig {
     @Bean
     public ZookeeperInit zookeeperInit() {

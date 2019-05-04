@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -29,18 +28,18 @@ import java.util.stream.Collectors;
  * @Date 2019/5/1
  * @Version 1.0
  */
-@SuppressWarnings("SpringJavaAutowiredFieldsWarningInspection")
-@Component
 public class ZookeeperServiceRegister implements ServiceRegister {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZookeeperServiceRegister.class);
 
-    /**
-     * 装配zookeeper.
-     */
-    @Autowired
-    private ZookeeperClientHolder zkClientHolder;
+    private ZookeeperClientHolder zkClientHolder = ZookeeperClientHolder.getINSTANCE();
 
+    private static final ZookeeperServiceRegister INSTANCE = new ZookeeperServiceRegister();
+    private ZookeeperServiceRegister(){}
+
+    public static ZookeeperServiceRegister getINSTANCE() {
+        return INSTANCE;
+    }
 
     @Override
     public ServiceInfo registerService(ServiceInfo serviceInfo) {
@@ -105,7 +104,15 @@ public class ZookeeperServiceRegister implements ServiceRegister {
     }
 
     @Override
-    public List<ServiceInfo> retrieveService() {
+    public ServiceInfo discoverService(String serviceName) {
+        try {
+            ZooKeeper zkClient = zkClientHolder.getClient();
+            byte[] serviceNodeBytes = zkClient.getData("/scathonrpc/" + serviceName, null, null);
+            String addrList = new String(serviceNodeBytes);
+            return ServiceInfo.builder().serviceName(serviceName).serviceAddrList(addrList).build();
+        } catch (KeeperException | InterruptedException e) {
+            LOGGER.error("error while discover service from zookeeper register center,err msg is : {}", e.getMessage());
+        }
         return null;
     }
 }

@@ -23,8 +23,8 @@ public class BeanRegistryTest {
     private UserServiceClient userServiceClient;
 
     @Test
-    public void testCustomRegistry(){
+    public void testCustomRegistry() {
         System.out.println(userServiceClient != null);
-        System.out.println(userServiceClient.demoService.hello(" world"));
+        System.out.println(userServiceClient.findUserById(11111));
     }
 }

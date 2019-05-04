@@ -7,6 +7,7 @@ import com.scathon.tech.rpc.registry.ServiceRegister;
 import com.scathon.tech.rpc.registry.common.ServiceInfo;
 import com.scathon.tech.rpc.registry.common.ServiceRoleEnum;
 import com.scathon.tech.rpc.registry.exception.ServiceModifyException;
+import com.scathon.tech.rpc.registry.zookeeper.ZookeeperServiceRegister;
 import com.scathon.tech.rpc.server.netty.RpcBootstrapServer;
 import com.scathon.tech.rpc.server.registry.RpcServicePublishedHolder;
 import org.apache.commons.lang3.tuple.Pair;
@@ -35,10 +36,12 @@ import java.util.stream.Collectors;
 @Component
 public class RpcServerInitProcess implements InitializingBean, ApplicationContextAware {
     private static final Logger LOGGER = LoggerFactory.getLogger(RpcServerInitProcess.class);
+
+    private ServiceRegister serviceRegister = ZookeeperServiceRegister.getINSTANCE();
+
     @Autowired
     private RpcProperties rpcProperties;
-    @Autowired
-    private ServiceRegister serviceRegister;
+
     @Autowired
     private RpcBootstrapServer rpcServer;
 

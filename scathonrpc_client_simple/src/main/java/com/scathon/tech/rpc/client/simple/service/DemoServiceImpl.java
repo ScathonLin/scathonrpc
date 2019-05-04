@@ -1,4 +1,4 @@
-package com.scathon.tech.rpc.client;
+package com.scathon.tech.rpc.client.simple.service;
 
 /**
  * TODO Function The Class Is.

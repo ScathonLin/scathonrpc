@@ -43,7 +43,7 @@ public class RpcProxyInitializer implements InitializingBean, ApplicationContext
                             .anyMatch(anno -> anno.annotationType() == RpcAutowired.class))
                     .collect(Collectors.toList());
             for (Field field : rpcSrvSubAnnoList) {
-                RpcServiceCallProxy proxy = new RpcServiceCallProxy();
+                RpcServiceCallProxy proxy = RpcServiceCallProxy.getINSTANCE();
                 Object targetProxy = CglibProxyUtils.getProxyByInterfaceType(proxy, field.getType());
                 field.setAccessible(true);
                 field.set(obj, targetProxy);
