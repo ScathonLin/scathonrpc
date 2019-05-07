@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 public class RpcServerInitProcess implements InitializingBean, ApplicationContextAware {
     private static final Logger LOGGER = LoggerFactory.getLogger(RpcServerInitProcess.class);
 
-    private ServiceRegister serviceRegister = ZookeeperServiceRegister.getINSTANCE();
+    private ServiceRegister serviceRegister = ZookeeperServiceRegister.getInstance();
 
     @Autowired
     private RpcProperties rpcProperties;

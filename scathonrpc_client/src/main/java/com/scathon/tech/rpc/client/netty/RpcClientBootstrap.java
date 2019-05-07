@@ -3,15 +3,10 @@ package com.scathon.tech.rpc.client.netty;
 import com.scathon.tech.rpc.client.cache.LockCache;
 import com.scathon.tech.rpc.client.cache.RpcResponseCache;
 import com.scathon.tech.rpc.common.CommonModuleBeanScanFlag;
-import com.scathon.tech.rpc.common.codec.MessageDecoder;
-import com.scathon.tech.rpc.common.codec.MessageEncoder;
-import com.scathon.tech.rpc.common.entity.RequestMessage;
-import com.scathon.tech.rpc.common.entity.ResponseMessage;
-import com.scathon.tech.rpc.common.utils.ProtostuffCodecUtils;
+import com.scathon.tech.rpc.common.proto.RequestMsgEntity;
+import com.scathon.tech.rpc.common.proto.ResponseMsgEntity;
 import com.scathon.tech.rpc.registry.common.ServiceInfo;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -19,6 +14,8 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.protobuf.ProtobufDecoder;
+import io.netty.handler.codec.protobuf.ProtobufEncoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import org.slf4j.Logger;
@@ -48,7 +45,7 @@ public class RpcClientBootstrap {
     private static final Object LOCK = new Object();
     private static final RpcClientBootstrap INSTANCE = new RpcClientBootstrap();
 
-    public static RpcClientBootstrap getINSTANCE() {
+    public static RpcClientBootstrap getInstance() {
         return INSTANCE;
     }
 
@@ -87,12 +84,10 @@ public class RpcClientBootstrap {
         @Override
         protected void initChannel(SocketChannel channel) throws Exception {
             channel.pipeline()
-                    .addLast(new MessageEncoder.RequestMsgEncoder())
-                    // input-1
-                    //.addLast(new ProtobufVarint32FrameDecoder())
-                    // input-2
-                    .addLast(new MessageDecoder.ResponseMsgDecocder())
-                    //.addLast(new ProtobufVarint32LengthFieldPrepender())
+                    .addLast(new ProtobufVarint32FrameDecoder())
+                    .addLast(new ProtobufDecoder(ResponseMsgEntity.ResponseMessage.getDefaultInstance()))
+                    .addLast(new ProtobufVarint32LengthFieldPrepender())
+                    .addLast(new ProtobufEncoder())
                     .addLast(new ClientDataProcessHandler());
         }
     }
@@ -104,11 +99,18 @@ public class RpcClientBootstrap {
      * @param serviceInfo service信息.
      * @return 响应消息体.
      */
-    public ResponseMessage callRemoteService(RequestMessage reqMsg, ServiceInfo serviceInfo) {
+    public ResponseMsgEntity.ResponseMessage callRemoteService(RequestMsgEntity.RequestMessage reqMsg,
+                                                               ServiceInfo serviceInfo) {
 
         String uuid = reqMsg.getRequestUUID();
+        EventLoopGroup group = null;
         try {
-            Bootstrap bs = getBootstrap();
+            group = new NioEventLoopGroup();
+            Bootstrap bs = new Bootstrap();
+            bs.group(group)
+                    .channel(NioSocketChannel.class)
+                    .handler(new RpcClientCannnelInitializer())
+                    .option(ChannelOption.SO_KEEPALIVE, true);
             String[] addressArr = serviceInfo.getServiceAddrList().split(",");
             String[] socketInfo = addressArr[0].split(":");
             String host = socketInfo[0];
@@ -121,10 +123,10 @@ public class RpcClientBootstrap {
             future.channel().writeAndFlush(reqMsg).sync();
 
             synchronized (LockCache.get(uuid)) {
-                LockCache.get(uuid).wait();
+                LockCache.get(uuid).wait(2000);
             }
 
-            ResponseMessage respMsg = RpcResponseCache.get(uuid);
+            ResponseMsgEntity.ResponseMessage respMsg = RpcResponseCache.get(uuid);
             if (respMsg != null) {
                 future.channel().closeFuture().sync();
             }
@@ -134,13 +136,14 @@ public class RpcClientBootstrap {
         } catch (InterruptedException e) {
             LOGGER.error("interrupted exception occured, err msg is : {}", e.getMessage());
         } catch (Exception ex) {
-            ex.printStackTrace();
-            //LOGGER.info("unknown exception found while calling remote service, msg is : {}", ex.getStackTrace());
+            LOGGER.info("unknown exception found while calling remote service, msg is : {}", ex.getMessage());
         } finally {
             LockCache.remove(uuid);
             RpcResponseCache.remove(uuid);
+            if (group != null) {
+                group.shutdownGracefully();
+            }
         }
         return null;
     }
-
 }

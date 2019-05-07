@@ -12,8 +12,6 @@ import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -32,12 +30,12 @@ public class ZookeeperServiceRegister implements ServiceRegister {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZookeeperServiceRegister.class);
 
-    private ZookeeperClientHolder zkClientHolder = ZookeeperClientHolder.getINSTANCE();
+    private ZookeeperClientHolder zkClientHolder = ZookeeperClientHolder.getInstance();
 
     private static final ZookeeperServiceRegister INSTANCE = new ZookeeperServiceRegister();
     private ZookeeperServiceRegister(){}
 
-    public static ZookeeperServiceRegister getINSTANCE() {
+    public static ZookeeperServiceRegister getInstance() {
         return INSTANCE;
     }
 

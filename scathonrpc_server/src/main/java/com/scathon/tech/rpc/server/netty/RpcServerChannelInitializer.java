@@ -1,9 +1,10 @@
 package com.scathon.tech.rpc.server.netty;
 
-import com.scathon.tech.rpc.common.codec.MessageDecoder;
-import com.scathon.tech.rpc.common.codec.MessageEncoder;
+import com.scathon.tech.rpc.common.proto.RequestMsgEntity;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.codec.protobuf.ProtobufDecoder;
+import io.netty.handler.codec.protobuf.ProtobufEncoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import org.slf4j.Logger;
@@ -37,11 +38,11 @@ public class RpcServerChannelInitializer extends ChannelInitializer<SocketChanne
                 // input-1
                 .addLast(new ProtobufVarint32FrameDecoder())
                 // input-2
-                .addLast(new MessageDecoder.RequestMsgDecoder())
+                .addLast(new ProtobufDecoder(RequestMsgEntity.RequestMessage.getDefaultInstance()))
                 // output-1
                 .addLast(new ProtobufVarint32LengthFieldPrepender())
                 // output-2
-                .addLast(new MessageEncoder.ResponseMessageEncoder())
+                .addLast(new ProtobufEncoder())
                 // output-3
                 .addLast(new RpcRequestProcessHandler());
         LOGGER.info("complete init channel...");

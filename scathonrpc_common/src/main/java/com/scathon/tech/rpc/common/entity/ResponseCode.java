@@ -1,7 +1,5 @@
 package com.scathon.tech.rpc.common.entity;
 
-import java.util.function.Function;
-
 /**
  * TODO Function The Class Is.
  *
@@ -27,6 +25,13 @@ public enum ResponseCode {
         this.code = code;
     }
     public static final class CodeMsgMapping{
-        //public static final Map<String, Function<>>
+    }
+
+    public int getCode() {
+        return code;
+    }
+
+    public void setCode(int code) {
+        this.code = code;
     }
 }

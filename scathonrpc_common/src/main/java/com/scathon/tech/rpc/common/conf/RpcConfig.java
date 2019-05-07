@@ -29,7 +29,7 @@ public class RpcConfig {
 
     private static final RpcConfig INSTANCE = new RpcConfig();
 
-    public static RpcConfig getINSTANCE() {
+    public static RpcConfig getInstance() {
         return INSTANCE;
     }
 

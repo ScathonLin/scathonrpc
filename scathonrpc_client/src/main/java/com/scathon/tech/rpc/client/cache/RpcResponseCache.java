@@ -1,6 +1,6 @@
 package com.scathon.tech.rpc.client.cache;
 
-import com.scathon.tech.rpc.common.entity.ResponseMessage;
+import com.scathon.tech.rpc.common.proto.ResponseMsgEntity;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,10 +19,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class RpcResponseCache {
     private static final Logger LOGGER = LoggerFactory.getLogger(RpcResponseCache.class);
-    private static final Map<String, ResponseMessage> CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, ResponseMsgEntity.ResponseMessage> CACHE = new ConcurrentHashMap<>();
 
-    public static void push(ResponseMessage rspMsg) {
-        String uuid = rspMsg.getRequestUUID();
+    public static void push(ResponseMsgEntity.ResponseMessage rspMsg) {
+        String uuid = rspMsg.getRequestId();
         if (StringUtils.isEmpty(uuid)) {
             LOGGER.error("reques uuid is empty!! please check!!");
             return;
@@ -30,11 +30,11 @@ public class RpcResponseCache {
         CACHE.put(uuid, rspMsg);
     }
 
-    public static ResponseMessage get(String reqUUID) {
+    public static ResponseMsgEntity.ResponseMessage get(String reqUUID) {
         return CACHE.getOrDefault(reqUUID, null);
     }
 
-    public static ResponseMessage remove(String reqUUID) {
+    public static ResponseMsgEntity.ResponseMessage remove(String reqUUID) {
         return CACHE.remove(reqUUID);
     }
 

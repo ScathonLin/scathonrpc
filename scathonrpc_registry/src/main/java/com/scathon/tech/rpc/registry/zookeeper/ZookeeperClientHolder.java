@@ -40,7 +40,7 @@ public final class ZookeeperClientHolder {
 
     private static final ZookeeperClientHolder INSTANCE = new ZookeeperClientHolder();
 
-    public static ZookeeperClientHolder getINSTANCE() {
+    public static ZookeeperClientHolder getInstance() {
         return INSTANCE;
     }
 
@@ -61,7 +61,7 @@ public final class ZookeeperClientHolder {
             if (zkClient == null) {
                 synchronized (LOCK) {
                     if (zkClient == null) {
-                        RpcConfig config = RpcConfig.getINSTANCE();
+                        RpcConfig config = RpcConfig.getInstance();
                         String zkAddrList = config.getProperty(RpcPropNameContext.ZK_CLUSTER_ADDRS);
                         int sessionTimeout =
                                 Integer.parseInt(config.getProperty(RpcPropNameContext.ZK_SESSION_TIMEOUT_MS));
@@ -79,7 +79,7 @@ public final class ZookeeperClientHolder {
 
     public ZooKeeper rebuild() {
         try {
-            RpcConfig config = RpcConfig.getINSTANCE();
+            RpcConfig config = RpcConfig.getInstance();
             String zkAddrList = config.getProperty(RpcPropNameContext.ZK_CLUSTER_ADDRS);
             int sessionTimeout =
                     Integer.parseInt(config.getProperty(RpcPropNameContext.ZK_SESSION_TIMEOUT_MS));
