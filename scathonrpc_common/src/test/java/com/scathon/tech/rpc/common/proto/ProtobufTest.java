@@ -3,7 +3,6 @@ package com.scathon.tech.rpc.common.proto;
 import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.scathon.tech.rpc.common.entity.RequestMessage;
 import com.scathon.tech.rpc.common.utils.ProtostuffCodecUtils;
 import org.junit.Test;
 
@@ -23,14 +22,6 @@ import java.util.Optional;
 public class ProtobufTest {
     @Test
     public void anyTest() throws InvalidProtocolBufferException {
-        RequestMessage reqMsg =
-                new RequestMessage().setServiceName("hello").setRequestUUID("ajsdkfj").setParameters(new Object[]{1,
-                        "linhd"});
-        byte[] bytes1 = ProtostuffCodecUtils.serialize(reqMsg, RequestMessage.class).get();
-        System.out.println(bytes1.length);
-        RequestMessage deserialize = ProtostuffCodecUtils.deserialize(bytes1, RequestMessage.class).get();
-        System.out.println(deserialize.toString());
-
 
         RequestMsgEntity.RequestMessage.Builder builder = RequestMsgEntity.RequestMessage.newBuilder();
 

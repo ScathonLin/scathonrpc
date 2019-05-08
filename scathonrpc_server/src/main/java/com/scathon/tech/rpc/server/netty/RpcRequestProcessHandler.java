@@ -43,8 +43,8 @@ public final class RpcRequestProcessHandler extends SimpleChannelInboundHandler<
         LOGGER.info("received one request : {}", msg.toString());
         // 处理请求，获取响应结果.
         ResponseMsgEntity.ResponseMessage respMsg = process(msg);
-        LOGGER.info("complete process requst, id is : {}", msg.getRequestUUID());
 
+        LOGGER.info("complete process requst, id is : {}", msg.getRequestUUID());
         ctx.writeAndFlush(respMsg).addListener(ChannelFutureListener.CLOSE);
         LOGGER.info("completely write and flush data to next handler from process handler....");
     }
@@ -54,16 +54,21 @@ public final class RpcRequestProcessHandler extends SimpleChannelInboundHandler<
         String serviceName = msg.getServiceName();
         String methodName = msg.getMethodName();
 
-        ReqParamTypes parameterTypes = ProtostuffCodecUtils.deserialize(msg.getParamTypes().getValue().toByteArray(),
+        // 解析请求的方法的参数类型.
+        ReqParamTypes parameterTypes = ProtostuffCodecUtils.deserialize(msg.getParamTypes().getValue(),
                 ReqParamTypes.class).orElse(new ReqParamTypes());
+
+        // 参数类型列表转换为参数类型数组，用于反射调用方法.
         List<Class> paramTypes = parameterTypes.getParams();
         Class<?>[] paramTypesArr = new Class<?>[paramTypes.size()];
         for (int i = 0; i < paramTypes.size(); i++) {
             paramTypesArr[i] = paramTypes.get(i);
         }
 
-        ReqParams parameters = ProtostuffCodecUtils.deserialize(msg.getParamObjs().getValue().toByteArray(),
+        // 反序列化请求参数列表.
+        ReqParams parameters = ProtostuffCodecUtils.deserialize(msg.getParamObjs().getValue(),
                 ReqParams.class).orElse(new ReqParams());
+        // 参数列表转换为数组，用于反射调用.
         Object[] params = parameters.getParams().toArray();
 
         // 获取服务名称和服务实例对象的映射关系.
@@ -80,31 +85,43 @@ public final class RpcRequestProcessHandler extends SimpleChannelInboundHandler<
         }
 
         try {
-
             LOGGER.info("start calling service: {}#{}", serviceName, methodName);
+            // 调用方法，返回结果.
             Object invokeResult = ReflectionUtils.invokeMethod(targetService, methodName, paramTypesArr, params);
 
-            respMsgBuilder.setErrorCode(SUCCESS.getCode()).setErrMsg(codeMsgMap.get(SUCCESS).apply(new Object[]{serviceName, methodName}));
+            // 调用成功，设置errorCode以及errMsg.
+            // 获取msg 模板Function.
+            Function<Object[], String> successTemplate = codeMsgMap.get(SUCCESS);
+            respMsgBuilder.setErrorCode(SUCCESS.getCode()).setErrMsg(successTemplate.apply(new Object[]{serviceName,
+                    methodName}));
             respMsgBuilder.setRequestId(msg.getRequestUUID());
-            // TODO problems.
+
+            // 构建响应body.
             ResponseBody rspBody = new ResponseBody();
+            // 设置响应体内容.
             rspBody.setBody(invokeResult);
             byte[] rspBodyBytes = ProtostuffCodecUtils.serialize(rspBody, ResponseBody.class).orElse(new byte[0]);
+
+            // Protostuff序列化响应体内容设置到Response的Any对象中.
             respMsgBuilder.setResponseBody(Any.newBuilder().setValue(ByteString.copyFrom(rspBodyBytes)));
             LOGGER.info("successfully calling service:{}#{}", serviceName, methodName);
 
         } catch (NoSuchMethodException e) {
             // 方法没找到
-            respMsgBuilder.setErrorCode(FUNC_NOT_FOUND.getCode()).setErrMsg(codeMsgMap.get(FUNC_NOT_FOUND).apply(new Object[]{methodName}));
+            Function<Object[], String> funcNotFoundTpl = codeMsgMap.get(FUNC_NOT_FOUND);
+            respMsgBuilder.setErrorCode(FUNC_NOT_FOUND.getCode()).setErrMsg(funcNotFoundTpl.apply(new Object[]{methodName}));
         } catch (InvocationTargetException e) {
             // 未知异常.
-            respMsgBuilder.setErrorCode(UNKNOWN_ERROR.getCode()).setErrMsg(codeMsgMap.get(UNKNOWN_ERROR).apply(new Object[]{serviceName,
+            Function<Object[], String> unknowErrorTpl = codeMsgMap.get(UNKNOWN_ERROR);
+            respMsgBuilder.setErrorCode(UNKNOWN_ERROR.getCode()).setErrMsg(unknowErrorTpl.apply(new Object[]{serviceName,
                     methodName}));
         } catch (IllegalAccessException e) {
             // 非法访问异常.
-            respMsgBuilder.setErrorCode(ACCESS_ERROR.getCode()).setErrMsg(codeMsgMap.get(ACCESS_ERROR).apply(new Object[]{serviceName,
+            Function<Object[], String> accessErrorTpl = codeMsgMap.get(ACCESS_ERROR);
+            respMsgBuilder.setErrorCode(ACCESS_ERROR.getCode()).setErrMsg(accessErrorTpl.apply(new Object[]{serviceName,
                     methodName}));
         }
+
         return respMsgBuilder.build();
     }
 

@@ -1,5 +1,6 @@
 package com.scathon.tech.rpc.common.utils;
 
+import com.google.protobuf.ByteString;
 import io.protostuff.LinkedBuffer;
 import io.protostuff.ProtostuffIOUtil;
 import io.protostuff.Schema;
@@ -22,6 +23,11 @@ public final class ProtostuffCodecUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProtostuffCodecUtils.class);
 
     private ProtostuffCodecUtils() {
+    }
+
+    public static <T> Optional<T> deserialize(ByteString byteString, Class<T> objType) {
+        byte[] bytes = byteString.toByteArray();
+        return deserialize(bytes, objType);
     }
 
     /**

@@ -1,6 +1,5 @@
 package com.scathon.tech.rpc.client.netty;
 
-import com.scathon.tech.rpc.client.cache.LockCache;
 import com.scathon.tech.rpc.client.cache.RpcResponseCache;
 import com.scathon.tech.rpc.common.proto.ResponseMsgEntity;
 import io.netty.channel.ChannelHandlerContext;
@@ -23,13 +22,8 @@ public class ClientDataProcessHandler extends SimpleChannelInboundHandler<Respon
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ResponseMsgEntity.ResponseMessage msg) throws Exception {
         String requestUUID = msg.getRequestId();
-        RpcResponseCache.push(msg);
+        RpcResponseCache.get(requestUUID).put(msg);
         LOGGER.info("successfully get response from server, uuid is : {}", requestUUID);
-
-        synchronized (LockCache.get(requestUUID)) {
-            LockCache.get(requestUUID).notifyAll();
-        }
-
     }
 
     @Override

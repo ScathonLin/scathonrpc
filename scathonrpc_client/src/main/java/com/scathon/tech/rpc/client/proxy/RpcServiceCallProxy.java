@@ -2,7 +2,6 @@ package com.scathon.tech.rpc.client.proxy;
 
 import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
-import com.scathon.tech.rpc.client.cache.LockCache;
 import com.scathon.tech.rpc.client.netty.RpcClientBootstrap;
 import com.scathon.tech.rpc.common.annotations.RpcService;
 import com.scathon.tech.rpc.common.entity.ReqParamTypes;
@@ -68,10 +67,8 @@ public final class RpcServiceCallProxy implements MethodInterceptor {
         ServiceInfo serviceInfo = REGISTER.discoverService(serviceName);
         RpcClientBootstrap bootstrap = RpcClientBootstrap.getInstance();
 
-        LockCache.push(reqMsg.getRequestUUID());
         ResponseMsgEntity.ResponseMessage rsp = bootstrap.callRemoteService(reqMsg, serviceInfo);
-        LOGGER.error("*****************************");
-        byte[] bodyBytes = rsp.getResponseBody().getValue().toByteArray();
+        ByteString bodyBytes = rsp.getResponseBody().getValue();
         ResponseBody rspBody =
                 ProtostuffCodecUtils.deserialize(bodyBytes, ResponseBody.class).orElse(new ResponseBody());
         Object bodyObj = rspBody.getBody();

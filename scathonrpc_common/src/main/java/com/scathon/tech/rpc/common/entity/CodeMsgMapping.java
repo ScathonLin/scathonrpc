@@ -32,6 +32,8 @@ public class CodeMsgMapping {
         MAP.put(ACCESS_ERROR, (vargs) -> String.format(" illegal access remote service : #{ %s#%s }#! please contact " +
                         "administrator.",
                 (Object[]) vargs));
+        MAP.put(TIMEOUT, (vargs) -> String.format(" timeout while calling remote service : #{ %s#%s }#! ",
+                (Object[]) vargs));
     }
 
     public static void main(String[] args) {

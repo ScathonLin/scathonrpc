@@ -16,6 +16,7 @@ public enum ResponseCode {
     UNKNOWN_ERROR(102),
     PARAMS_NOT_LEGAL(103),
     ACCESS_ERROR(104),
+    TIMEOUT(105),
     SUCCESS(200);
 
 

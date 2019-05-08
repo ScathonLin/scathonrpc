@@ -26,5 +26,6 @@ public class BeanRegistryTest {
     public void testCustomRegistry() {
         System.out.println(userServiceClient != null);
         System.out.println(userServiceClient.findUserById(11111));
+        System.out.println(userServiceClient.findOrderByUserInfo());
     }
 }
