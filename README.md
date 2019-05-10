@@ -149,3 +149,9 @@ zookeeper.cluster.addresses=127.0.0.1:2181
 zookeeper.session.timeout.ms=60000
 ```
 与客户端不同的是，要添加RPC服务绑定的端口和IP配置.
+
+
+### 改进之处
++  未对Method对象进行缓存，影响反射调用效率；
++  客户端请求zookeeper获取服务地址的时候，对于地址列表未实现负载均衡机制来选择RPC服务地址.
++ protobuf Any注入 protostuff 序列化后的bytes数据，然后再将利用protobuf序列化数据，反序列化是否影响性能，有待确定。
