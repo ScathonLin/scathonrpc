@@ -187,7 +187,9 @@ zookeeper.session.timeout.ms=60000
 ### 性能初测
 
 > 单机环境：OS: Win10; Zookeeper Server: Centos6.9(1C_3G_VM)
-+ tps: 174.45917655268667
++ 不涉及数据库交互： tps: 299.7601918465228
++ 数据库交互：待测
++ 多线程高并发场景：待测
 
 ### 改进之处
 +  未对Method对象进行缓存，影响反射调用效率；
