@@ -140,6 +140,38 @@ public class OrderServiceImpl implements OrderService {
 ```
 > 如上实现，在容器启动的时候，会自动发现服务，并且将服务发布到注册中心，供客户端订阅服务.
 
+3. 以springboot应用为例
+
++ 客户端入口配置：
+```
+@SpringBootApplication
+@Import(value = {RpcClientAutoInitConfig.class})
+@RestController
+public class ClientApplication {
+
+    @Autowired
+    private UserServiceClient userServiceClient;
+
+
+    @GetMapping("/user/{name}/{age}")
+    public User findUserByNameAndAge(@PathVariable("name") String name, @PathVariable("age") int age) {
+        return userServiceClient.findUserByNameAndAge(name, age);
+    }
+
+    public static void main(String[] args) {
+        SpringApplication.run(ClientApplication.class, args);
+    }
+
+}
+```
+> 关键注解就是要Import RPCClientAutoInitConfig类.这是RPC客户端自动配置的类.
+> 如果是普通spring应用， 那么需要确保xml中配置的包扫描或者@Configuration中Import该类.否则无法完成自动配置.
+
++ 服务端入口配置
+> 服务端入口配置和客户端配置差不多，不同的是，服务端入口需要Import的类是：RpcServerAutoInitConfig类，只有引入了这个类，RPC服务端才会自动配置.
+
++ 服务端入口配置：
+
 3. 配置文件
 ```
 # netty 监听的rpc服务端口(要配置！)
@@ -155,3 +187,4 @@ zookeeper.session.timeout.ms=60000
 +  未对Method对象进行缓存，影响反射调用效率；
 +  客户端请求zookeeper获取服务地址的时候，对于地址列表未实现负载均衡机制来选择RPC服务地址.
 + protobuf Any注入 protostuff 序列化后的bytes数据，然后再将利用protobuf序列化数据，反序列化是否影响性能，有待确定。
++ 在服务发现的时候未添加负载均衡机制.
