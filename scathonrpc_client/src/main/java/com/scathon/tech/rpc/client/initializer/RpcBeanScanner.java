@@ -1,7 +1,5 @@
-package com.scathon.tech.rpc.client.spring;
+package com.scathon.tech.rpc.client.initializer;
 
-import com.scathon.tech.rpc.common.annotations.RpcServiceSubscriber;
-import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanDefinition;

@@ -1,10 +1,12 @@
 package com.scathon.tech.rpc.client.netty;
 
 import com.scathon.tech.rpc.client.cache.RpcResponseCache;
+import com.scathon.tech.rpc.common.codec.MessageDecoder;
+import com.scathon.tech.rpc.common.codec.MessageEncoder;
 import com.scathon.tech.rpc.common.entity.CodeMsgMapping;
+import com.scathon.tech.rpc.common.entity.RequestMessage;
 import com.scathon.tech.rpc.common.entity.ResponseCode;
-import com.scathon.tech.rpc.common.proto.RequestMsgEntity;
-import com.scathon.tech.rpc.common.proto.ResponseMsgEntity;
+import com.scathon.tech.rpc.common.entity.ResponseMessage;
 import com.scathon.tech.rpc.registry.common.ServiceInfo;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
@@ -14,10 +16,6 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.protobuf.ProtobufDecoder;
-import io.netty.handler.codec.protobuf.ProtobufEncoder;
-import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
-import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +31,7 @@ import java.util.function.Function;
  * @Date 2019/5/4
  * @Version 1.0
  */
-public class RpcClientBootstrap {
+public final class RpcClientBootstrap {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RpcClientBootstrap.class);
 
@@ -46,6 +44,7 @@ public class RpcClientBootstrap {
     public static RpcClientBootstrap getInstance() {
         return INSTANCE;
     }
+
 
     private RpcClientBootstrap() {
     }
@@ -67,7 +66,7 @@ public class RpcClientBootstrap {
                     bootstrap.group(group)
                             .channel(NioSocketChannel.class)
                             .handler(new RpcClientCannnelInitializer())
-                            .option(ChannelOption.SO_KEEPALIVE, true);
+                            .option(ChannelOption.TCP_NODELAY, true);
                 }
             }
         }
@@ -87,10 +86,8 @@ public class RpcClientBootstrap {
         @Override
         protected void initChannel(SocketChannel channel) throws Exception {
             channel.pipeline()
-                    .addLast(new ProtobufVarint32FrameDecoder())
-                    .addLast(new ProtobufDecoder(ResponseMsgEntity.ResponseMessage.getDefaultInstance()))
-                    .addLast(new ProtobufVarint32LengthFieldPrepender())
-                    .addLast(new ProtobufEncoder())
+                    .addLast(new MessageDecoder(ResponseMessage.class))
+                    .addLast(new MessageEncoder(RequestMessage.class))
                     .addLast(new ClientDataProcessHandler());
         }
     }
@@ -102,8 +99,8 @@ public class RpcClientBootstrap {
      * @param serviceInfo service信息.
      * @return 响应消息体.
      */
-    public ResponseMsgEntity.ResponseMessage callRemoteService(RequestMsgEntity.RequestMessage reqMsg,
-                                                               ServiceInfo serviceInfo) {
+    public ResponseMessage callRemoteService(RequestMessage reqMsg,
+                                             ServiceInfo serviceInfo) {
 
         String uuid = reqMsg.getRequestUUID();
         try {
@@ -112,29 +109,28 @@ public class RpcClientBootstrap {
             String[] socketInfo = addressArr[0].split(":");
             String host = socketInfo[0];
             int port = Integer.parseInt(socketInfo[1]);
-            ChannelFuture future = bs.connect(host, port);
+            ChannelFuture future = bs.connect(host, port).sync();
             LOGGER.info("connect to rpc server endpoint {}:{} successfully! ^_^", host, port);
             // 发起rpc请求.
             LOGGER.info("start calling remote servive,req msg is : {}", reqMsg.toString());
 
+            // 缓存中加入reqMsg,利用请求的UUID作为key，创建一个阻塞队列，等待远程响应结果.
+            RpcResponseCache.push(reqMsg);
+
             // 将请求写到channel中.
             future.channel().writeAndFlush(reqMsg).sync();
 
-            // 缓存中加入reqMsg,利用请求的UUID作为key，创建一个阻塞队列，等待远程响应结果.
-            RpcResponseCache.push(reqMsg);
             // 5秒钟的请求时间，超过五秒钟，返回.
-            ResponseMsgEntity.ResponseMessage respMsg = RpcResponseCache.get(uuid).poll(5000, TimeUnit.MILLISECONDS);
+            ResponseMessage respMsg = RpcResponseCache.get(uuid).poll(5000, TimeUnit.MILLISECONDS);
             future.channel().closeFuture().sync();
             if (respMsg == null) {
                 // 如果响应结果是null，设置错误信息.
-                ResponseMsgEntity.ResponseMessage.Builder rspMsgBuilder =
-                        ResponseMsgEntity.ResponseMessage.newBuilder();
                 Function<Object[], String> timeoutErrorTpl = CodeMsgMapping.MAP.get(ResponseCode.TIMEOUT);
-                rspMsgBuilder.setRequestId(reqMsg.getRequestUUID())
-                        .setErrorCode(ResponseCode.TIMEOUT.getCode())
-                        .setErrMsg(timeoutErrorTpl.apply(new Object[]{reqMsg.getServiceName(),
-                                reqMsg.getMethodName()}));
-                return rspMsgBuilder.build();
+                String errorMsg = timeoutErrorTpl.apply(new Object[]{reqMsg.getServiceName(),
+                        reqMsg.getMethodName()});
+                return new ResponseMessage().setRequestUUID(reqMsg.getRequestUUID())
+                        .setErrorCode(ResponseCode.TIMEOUT)
+                        .setErrMsg(errorMsg);
             }
             return respMsg;
 

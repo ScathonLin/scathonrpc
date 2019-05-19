@@ -8,7 +8,9 @@ import io.protostuff.runtime.RuntimeSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Protostuff 序列化反序列化工具类.
@@ -22,12 +24,9 @@ public final class ProtostuffCodecUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProtostuffCodecUtils.class);
 
-    private ProtostuffCodecUtils() {
-    }
+    private static final Map<Class, Schema> SCHEMA_CACHE_MAP = new ConcurrentHashMap<>();
 
-    public static <T> Optional<T> deserialize(ByteString byteString, Class<T> objType) {
-        byte[] bytes = byteString.toByteArray();
-        return deserialize(bytes, objType);
+    private ProtostuffCodecUtils() {
     }
 
     /**
@@ -59,6 +58,7 @@ public final class ProtostuffCodecUtils {
      * @param <T>            泛型类型参数.
      * @return 序列化后的字节数组.
      */
+    @SuppressWarnings("unchecked")
     public static <T> Optional<byte[]> serialize(T objToSerialize, Class<T> objType) {
 
         if (objToSerialize == null) {
@@ -66,10 +66,36 @@ public final class ProtostuffCodecUtils {
             return Optional.empty();
         }
 
-        Schema<T> schema = RuntimeSchema.getSchema(objType);
+        Schema schema = SCHEMA_CACHE_MAP.computeIfAbsent(objType, RuntimeSchema::getSchema);
         LinkedBuffer buffer = LinkedBuffer.allocate(512);
         byte[] bytesBuffer = ProtostuffIOUtil.toByteArray(objToSerialize, schema, buffer);
         buffer.clear();
         return Optional.of(bytesBuffer);
+    }
+
+    /**
+     * 序列化.
+     *
+     * @param objToSerialize 被序列化的对象.
+     * @return 序列化后的字节数组.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> Optional<byte[]> serialize(T objToSerialize) {
+
+        if (objToSerialize == null) {
+            return Optional.empty();
+        }
+
+        Class<T> cls = (Class<T>) objToSerialize.getClass();
+        LinkedBuffer buffer = LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE);
+        try {
+            Schema<T> schema = RuntimeSchema.getSchema(cls);
+            byte[] bytes = ProtostuffIOUtil.toByteArray(objToSerialize, schema, buffer);
+            return Optional.ofNullable(bytes);
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        } finally {
+            buffer.clear();
+        }
     }
 }

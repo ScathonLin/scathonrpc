@@ -1,10 +1,14 @@
-package com.scathon.tech.rpc.client.spring;
+package com.scathon.tech.rpc.client.initializer;
 
+import com.scathon.tech.rpc.client.netty.RpcClientBootstrap;
 import com.scathon.tech.rpc.client.proxy.CglibProxyUtils;
 import com.scathon.tech.rpc.client.proxy.RpcServiceCallProxy;
 import com.scathon.tech.rpc.common.annotations.RpcAutowired;
 import com.scathon.tech.rpc.common.annotations.RpcServiceSubscriber;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -26,8 +30,10 @@ import java.util.stream.Collectors;
  * @Version 1.0
  */
 @Component
-public class RpcProxyInitializer implements InitializingBean, ApplicationContextAware {
+public class RpcServiceProxyInitializer implements InitializingBean, ApplicationContextAware, DisposableBean {
     private ApplicationContext context;
+    private static final Logger LOGGER = LoggerFactory.getLogger(RpcServiceProxyInitializer.class);
+
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -54,5 +60,13 @@ public class RpcProxyInitializer implements InitializingBean, ApplicationContext
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.context = applicationContext;
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        LOGGER.warn("context is being closed, start release netty group....");
+        // 释放netty group.
+        RpcClientBootstrap.closeGroupGracefully();
+        LOGGER.warn("complete release netty group...");
     }
 }

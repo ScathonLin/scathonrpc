@@ -2,7 +2,7 @@ package com.scathon.tech.rpc.server;
 
 import com.scathon.tech.rpc.common.init.RpcCommonBeanConfig;
 import com.scathon.tech.rpc.registry.init.RegistryInitConfig;
-import com.scathon.tech.rpc.server.config.ServerBeanConfig;
+import com.scathon.tech.rpc.server.config.RpcServerAutoInitConfig;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -20,7 +20,7 @@ public class SimpleServerTest {
     @Test
     public void test() throws InterruptedException {
         ApplicationContext context =
-                new AnnotationConfigApplicationContext(ServerBeanConfig.class, RpcCommonBeanConfig.class, RegistryInitConfig.class);
+                new AnnotationConfigApplicationContext(RpcServerAutoInitConfig.class, RpcCommonBeanConfig.class, RegistryInitConfig.class);
         System.out.println("-0-0---");
     }
 }

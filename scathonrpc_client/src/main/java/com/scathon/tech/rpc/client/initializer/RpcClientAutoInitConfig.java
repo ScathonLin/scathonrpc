@@ -1,6 +1,7 @@
-package com.scathon.tech.rpc.client.spring;
+package com.scathon.tech.rpc.client.initializer;
 
 import com.scathon.tech.rpc.client.ClientModuleBeanScanFlag;
+import com.scathon.tech.rpc.common.init.RpcCommonBeanConfig;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -10,6 +11,6 @@ import org.springframework.context.annotation.Import;
  */
 @Configuration
 @ComponentScan(basePackageClasses = {ClientModuleBeanScanFlag.class})
-@Import(value = {RpcProxyInitializer.class})
-public class RpcClientBeanConfiguration {
+@Import(value = {RpcServiceProxyInitializer.class, RpcCommonBeanConfig.class})
+public class RpcClientAutoInitConfig {
 }

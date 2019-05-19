@@ -1,15 +1,9 @@
 package com.scathon.tech.rpc.client.proxy;
 
-import com.google.protobuf.Any;
-import com.google.protobuf.ByteString;
 import com.scathon.tech.rpc.client.netty.RpcClientBootstrap;
 import com.scathon.tech.rpc.common.annotations.RpcService;
-import com.scathon.tech.rpc.common.entity.ReqParamTypes;
-import com.scathon.tech.rpc.common.entity.ReqParams;
-import com.scathon.tech.rpc.common.entity.ResponseBody;
-import com.scathon.tech.rpc.common.proto.RequestMsgEntity;
-import com.scathon.tech.rpc.common.proto.ResponseMsgEntity;
-import com.scathon.tech.rpc.common.utils.ProtostuffCodecUtils;
+import com.scathon.tech.rpc.common.entity.RequestMessage;
+import com.scathon.tech.rpc.common.entity.ResponseMessage;
 import com.scathon.tech.rpc.registry.ServiceRegister;
 import com.scathon.tech.rpc.registry.common.ServiceInfo;
 import com.scathon.tech.rpc.registry.zookeeper.ZookeeperServiceRegister;
@@ -19,7 +13,6 @@ import org.springframework.cglib.proxy.MethodInterceptor;
 import org.springframework.cglib.proxy.MethodProxy;
 
 import java.lang.reflect.Method;
-import java.util.UUID;
 
 /**
  * RPC 服务代理类.
@@ -46,37 +39,34 @@ public final class RpcServiceCallProxy implements MethodInterceptor {
     @Override
     public Object intercept(Object obj, Method method, Object[] params, MethodProxy methodProxy) throws Throwable {
 
+        LOGGER.info("===>start package request data...");
+
         // 封装request对象.
         String methodName = method.getName();
-        RequestMsgEntity.RequestMessage.Builder reqBuilder = RequestMsgEntity.RequestMessage.newBuilder();
-        reqBuilder.setRequestUUID(UUID.randomUUID().toString());
+        RequestMessage reqMessage = new RequestMessage();
+        reqMessage.setRequestUUID(String.valueOf(System.currentTimeMillis()));
         String serviceName = method.getDeclaringClass().getAnnotation(RpcService.class).name();
-        reqBuilder.setServiceName(serviceName);
-        reqBuilder.setMethodName(methodName);
-        byte[] paramTypesBytes = ProtostuffCodecUtils.serialize(new ReqParamTypes().addAll(method.getParameterTypes()),
-                ReqParamTypes.class).orElse(new byte[0]);
+        reqMessage.setServiceName(serviceName);
+        reqMessage.setMethodName(methodName);
+        reqMessage.setParamTypes(method.getParameterTypes());
+        reqMessage.setParamObjs(params);
 
-        reqBuilder.setParamTypes(Any.newBuilder().setValue(ByteString.copyFrom(paramTypesBytes)).build());
-
-        byte[] paramsBytes =
-                ProtostuffCodecUtils.serialize(new ReqParams().addAll(params), ReqParams.class).orElse(new byte[0]);
-        reqBuilder.setParamObjs(Any.newBuilder().setValue(ByteString.copyFrom(paramsBytes)).build());
-
-        RequestMsgEntity.RequestMessage reqMsg = reqBuilder.build();
-
+        // 服务发现.
         ServiceInfo serviceInfo = REGISTER.discoverService(serviceName);
-        RpcClientBootstrap bootstrap = RpcClientBootstrap.getInstance();
+        LOGGER.info("===>service discover result: {}", serviceInfo.getServiceAddrList());
 
-        ResponseMsgEntity.ResponseMessage rsp = bootstrap.callRemoteService(reqMsg, serviceInfo);
-        ByteString bodyBytes = rsp.getResponseBody().getValue();
-        ResponseBody rspBody =
-                ProtostuffCodecUtils.deserialize(bodyBytes, ResponseBody.class).orElse(new ResponseBody());
-        Object bodyObj = rspBody.getBody();
+        RpcClientBootstrap bootstrap = RpcClientBootstrap.getInstance();
+        // 调用RPC服务.
+        ResponseMessage rsp = bootstrap.callRemoteService(reqMessage, serviceInfo);
+        if (rsp == null) {
+            throw new RuntimeException("some unknow runtime exception found...");
+        }
+        Object bodyObj = rsp.getRespBody();
         Class<?> returnType = method.getReturnType();
         if (returnType.isInstance(bodyObj)) {
             return returnType.cast(bodyObj);
+        } else {
+            throw new ClassCastException("resBody " + bodyObj + " is not the instance of " + returnType.getSimpleName());
         }
-        return null;
     }
-
 }

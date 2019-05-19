@@ -1,8 +1,10 @@
 package com.scathon.tech.rpc.server.config;
 
+import com.scathon.tech.rpc.common.init.RpcCommonBeanConfig;
 import com.scathon.tech.rpc.server.ServerModuleBeanScanFlag;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
 /**
  * TODO Function The Class Is.
@@ -15,5 +17,6 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @ComponentScan(basePackageClasses = {ServerModuleBeanScanFlag.class})
-public class ServerBeanConfig {
+@Import(RpcCommonBeanConfig.class)
+public class RpcServerAutoInitConfig {
 }

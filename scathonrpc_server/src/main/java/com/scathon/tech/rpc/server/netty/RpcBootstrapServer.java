@@ -28,8 +28,8 @@ public class RpcBootstrapServer {
 
     @Autowired
     private RpcProperties rpcProperties;
-    @Autowired
-    private RpcServerChannelInitializer channelInitializer;
+
+    private RpcServerChannelInitializer channelInitializer = RpcServerChannelInitializer.getInstance();
 
     /**
      * netty 服务引导.

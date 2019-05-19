@@ -19,7 +19,7 @@
     </modules>
     <properties>
         <spring.version>5.0.4.RELEASE</spring.version>
-        <netty.version>4.0.42.Final</netty.version>
+        <netty.version>4.0.26.Final</netty.version>
         <zk.version>3.4.10</zk.version>
         <slf4j.version>1.7.12</slf4j.version>
         <log4j.version>2.1</log4j.version>
@@ -53,16 +53,19 @@
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-context</artifactId>
                 <version>${spring.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-beans</artifactId>
                 <version>${spring.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-test</artifactId>
                 <version>${spring.version}</version>
+                <scope>provided</scope>
             </dependency>
             <!--slf4j start-->
             <dependency>
@@ -194,5 +197,27 @@
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
         <testSourceDirectory>src/test/java</testSourceDirectory>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution><!-- 配置执行器 -->
+                        <id>make-assembly</id>
+                        <phase>package</phase><!-- 绑定到package生命周期阶段上 -->
+                        <goals>
+                            <goal>single</goal><!-- 只运行一次 -->
+                        </goals>
+                        <configuration>
+                            <finalName>${project.name}</finalName>
+                            <!--<descriptor>src/main/assembly/assembly.xml</descriptor>-->
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
 </project>
