@@ -15,7 +15,7 @@
         <module>scathonrpc_client_simple</module>
         <module>scathonrpc_server_simple</module>
         <module>scathonrpc_service_example</module>
-        <module>scathonrpc_registry</module>
+        <module>scathonrpc_governance</module>
     </modules>
     <properties>
         <spring.version>5.0.4.RELEASE</spring.version>

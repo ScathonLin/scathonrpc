@@ -7,6 +7,8 @@ import com.scathon.tech.rpc.common.entity.CodeMsgMapping;
 import com.scathon.tech.rpc.common.entity.RequestMessage;
 import com.scathon.tech.rpc.common.entity.ResponseCode;
 import com.scathon.tech.rpc.common.entity.ResponseMessage;
+import com.scathon.tech.rpc.loadbalancer.LoadBalancer;
+import com.scathon.tech.rpc.loadbalancer.RandomLoadBalancer;
 import com.scathon.tech.rpc.registry.common.ServiceInfo;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
@@ -19,6 +21,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
@@ -41,8 +44,14 @@ public final class RpcClientBootstrap {
     private static final Object LOCK = new Object();
     private static final RpcClientBootstrap INSTANCE = new RpcClientBootstrap();
 
+    private static LoadBalancer loadBalancer = new RandomLoadBalancer();
+
     public static RpcClientBootstrap getInstance() {
         return INSTANCE;
+    }
+
+    public static synchronized void registerLoadBalancer(LoadBalancer loadBalancer) {
+        RpcClientBootstrap.loadBalancer = loadBalancer;
     }
 
 
@@ -105,8 +114,9 @@ public final class RpcClientBootstrap {
         String uuid = reqMsg.getRequestUUID();
         try {
             Bootstrap bs = getBootstrap();
-            String[] addressArr = serviceInfo.getServiceAddrList().split(",");
-            String[] socketInfo = addressArr[0].split(":");
+            ServiceInfo finalServiceInfo = loadBalancer.getServiceInfo(serviceInfo);
+            String addressArr = finalServiceInfo.getServiceAddrList();
+            String[] socketInfo = addressArr.split(":");
             String host = socketInfo[0];
             int port = Integer.parseInt(socketInfo[1]);
             ChannelFuture future = bs.connect(host, port).sync();
@@ -121,7 +131,7 @@ public final class RpcClientBootstrap {
             future.channel().writeAndFlush(reqMsg).sync();
 
             // 5秒钟的请求时间，超过五秒钟，返回.
-            ResponseMessage respMsg = RpcResponseCache.get(uuid).poll(5000, TimeUnit.MILLISECONDS);
+            ResponseMessage respMsg = RpcResponseCache.get(uuid).poll(5, TimeUnit.SECONDS);
             future.channel().closeFuture().sync();
             if (respMsg == null) {
                 // 如果响应结果是null，设置错误信息.
@@ -142,5 +152,12 @@ public final class RpcClientBootstrap {
             RpcResponseCache.remove(uuid);
         }
         return null;
+    }
+
+    public static void main(String[] args) {
+        Random random = new Random();
+        for (int i = 0; i < 10; i++) {
+            System.out.println(random.nextInt(1));
+        }
     }
 }

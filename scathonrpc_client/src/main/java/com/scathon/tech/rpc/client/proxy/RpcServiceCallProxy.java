@@ -13,6 +13,7 @@ import org.springframework.cglib.proxy.MethodInterceptor;
 import org.springframework.cglib.proxy.MethodProxy;
 
 import java.lang.reflect.Method;
+import java.util.UUID;
 
 /**
  * RPC 服务代理类.
@@ -44,7 +45,7 @@ public final class RpcServiceCallProxy implements MethodInterceptor {
         // 封装request对象.
         String methodName = method.getName();
         RequestMessage reqMessage = new RequestMessage();
-        reqMessage.setRequestUUID(String.valueOf(System.currentTimeMillis()));
+        reqMessage.setRequestUUID(UUID.randomUUID().toString());
         String serviceName = method.getDeclaringClass().getAnnotation(RpcService.class).name();
         reqMessage.setServiceName(serviceName);
         reqMessage.setMethodName(methodName);
