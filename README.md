@@ -10,8 +10,8 @@
 - scathonrpc_server
 > rpc服务端功能的封装，包括服务发布等功能.
 
-- scathonrpc_registry
-> rpc服务注册模块，目前使用zookeeper作为服务注册中心.
+- scathonrpc_governance
+> rpc服务治理模块（服务注册+负载均衡），目前使用zookeeper作为服务注册中心.
 
 - scathonrpc_common
 > 框架的共有工具以及逻辑的封装.
@@ -189,7 +189,8 @@ zookeeper.session.timeout.ms=60000
 > 单机环境：OS: Win10; Zookeeper Server: Centos6.9(1C_3G_VM)
 + 不涉及数据库交互： tps: 299.7601918465228
 + 数据库交互：待测
-+ 多线程高并发场景：待测
++ 多线程高并发场景（无数据库交互）：tps:276.7783005812344 (本机测试连接zk时延严重，原因未知)
++ 多线程高并发场景（数据库交互）：待测
 
 ### 改进之处
 +  未对Method对象进行缓存，影响反射调用效率；
